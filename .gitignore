@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+output/
+results/*
+!results/susceptibility/
+results/susceptibility/*
+!results/susceptibility/raw/
+.DS_Store

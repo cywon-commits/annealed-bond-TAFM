@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this code or data, please cite it as below."
+title: "annealed-bond-TAFM: code and data for the annealed-bond triangular Ising antiferromagnet"
+authors:
+  - family-names: Won
+    given-names: Changyeon
+    affiliation: "Department of Physics, Kyung Hee University, Seoul 02447, Republic of Korea"
+repository-code: "https://github.com/cywon-commits/annealed-bond-TAFM"
+license: MIT
+version: "1.0.0"
+date-released: "2026-11-12"
