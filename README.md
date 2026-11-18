@@ -34,11 +34,12 @@ The reference model is the fixed-bond triangular Ising antiferromagnet (TAFM) on
 ```bash
 pip install -r requirements.txt
 cd annealed-bond-tafm                 # run everything from the repository root
-python3 figures/make_figs.py          # Figs. 1, 4, 6, 7, 8, 12, 13
+python3 figures/make_figs.py          # Figs. 1, 4, 6, 7, 8, 13, 14
 python3 figures/make_chi_figs.py      # Figs. 9, 10
-python3 figures/fig_rgline.py         # Fig. 11
+python3 figures/fig_rgline.py         # Fig. 12
+python3 figures/make_clock_fig.py     # Fig. 11
 python3 figures/phase_snapshots/figA.py   # Fig. 5
-python3 figures/phase_snapshots/figB.py   # Fig. 14
+python3 figures/phase_snapshots/figB.py   # Fig. 15
 python3 figures/make_snaps.py         # Figs. 2, 3 (runs short simulations, about 5 min)
 ```
 
@@ -58,10 +59,11 @@ Figures are written to `output/figs/`; set `OUT_DIR` to change this. Run from th
 | Fig. 8 | `fig6_heat` | `figures/make_figs.py` | `figdata/fig4_heat.csv` |
 | Fig. 9 | `fig10_chi` | `figures/make_chi_figs.py` | `susceptibility/summary.txt` |
 | Fig. 10 | `fig11_mH` | `figures/make_chi_figs.py` | `susceptibility/summary.txt` |
-| Fig. 11 | `fig12_rgline` | `figures/fig_rgline.py` | `figdata/defect_classes_L32.csv` and TAFM critical points from the literature |
-| Fig. 12 | `fig8_eta_cos3` | `figures/make_figs.py` | `figdata/fig6a_eta.csv`, `fig6b_cos3.csv` |
-| Fig. 13 | `fig9_window` | `figures/make_figs.py` | `figdata/fig2_binder.csv` |
-| Fig. 14 | `fig_window_snap` | `figures/phase_snapshots/figB.py` | `snapshots/win_*.npz` |
+| Fig. 11 | `fig13_clock` | `figures/make_clock_fig.py` | — (schematic, Eq. for $n_1(\theta)$) |
+| Fig. 12 | `fig12_rgline` | `figures/fig_rgline.py` | `figdata/defect_classes_L32.csv` and TAFM critical points from the literature |
+| Fig. 13 | `fig8_eta_cos3` | `figures/make_figs.py` | `figdata/fig6a_eta.csv`, `fig6b_cos3.csv` |
+| Fig. 14 | `fig9_window` | `figures/make_figs.py` | `figdata/fig2_binder.csv` |
+| Fig. 15 | `fig_window_snap` | `figures/phase_snapshots/figB.py` | `snapshots/win_*.npz` |
 
 ## Reproducing the data
 
