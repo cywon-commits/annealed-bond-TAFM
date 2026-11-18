@@ -61,8 +61,8 @@ Figures are written to `output/figs/`; set `OUT_DIR` to change this. Run from th
 | Fig. 10 | `fig11_mH` | `figures/make_chi_figs.py` | `susceptibility/summary.txt` |
 | Fig. 11 | `fig13_clock` | `figures/make_clock_fig.py` | — (schematic, Eq. for $n_1(\theta)$) |
 | Fig. 12 | `fig12_rgline` | `figures/fig_rgline.py` | `figdata/defect_classes_L32.csv` and TAFM critical points from the literature |
-| Fig. 13 | `fig8_eta_cos3` | `figures/make_figs.py` | `figdata/fig6a_eta.csv`, `fig6b_cos3.csv` |
-| Fig. 14 | `fig9_window` | `figures/make_figs.py` | `figdata/fig2_binder.csv` |
+| Fig. 13 | `fig8_eta_cos3` | `figures/make_figs.py` | `window/psi2_by_L.csv`, `window/eta_fits.csv` |
+| Fig. 14 | `fig9_window` | `figures/make_figs.py` | `figdata/fig2_binder.csv` (reweighted curves), `window/raw_observables_d21.csv` (simulated temperatures) |
 | Fig. 15 | `fig_window_snap` | `figures/phase_snapshots/figB.py` | `snapshots/win_*.npz` |
 
 ## Reproducing the data
@@ -78,6 +78,7 @@ Every script states its usage in its docstring. The main entry points are listed
 - **Exact defect costs (Table III):**
   - `analysis/defect_costs/testA.py 6` and `testMu.py` compute the costs by maximum-weight matching.
   - `runC.py` measures the thermal densities of isolated and adjacent defects; `analyzeC.py` analyzes them.
+- **Power-law window (Figs. 13, 14, Table IX):** `analysis/window/raw_observables.py <dir of long_L*_d21*.npz>` extracts ψ², U4, ⟨cos 3θ⟩, ⟨cos 6θ⟩ per run with jackknife errors (`data/window/raw_observables_d21.csv`); `analysis/window/eta_fits.py` combines runs and fits η (`psi2_by_L.csv`, `eta_fits.csv`). The input files are in RhombileLattice, branch `partIX-ising-validation`, `results/long/`.
 - **Phase snapshots:** `figures/phase_snapshots/runs.py` produces the configurations, and `vort.py`, `adjcount.py`, `wn_check.py` count vortices and defects.
 
 The raw Monte Carlo time series of the production runs (`.npz` checkpoints) are too large to include. They can be regenerated with the scripts above, and the development history is in [cywon-commits/RhombileLattice](https://github.com/cywon-commits/RhombileLattice), branch `partIX-ising-validation`.

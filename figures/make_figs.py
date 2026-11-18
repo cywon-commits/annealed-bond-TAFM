@@ -209,49 +209,77 @@ def fig7():
     ax.grid(color=GRID,lw=0.5); fig.tight_layout(); save(fig,"fig7_tc_mu")
 
 # ---------- Fig 8: eta_eff and cos 3theta ----------
+def _wcsv(name):
+    import pandas as pd
+    return pd.read_csv(DATA/"window"/name)
+MUCOL={1:"#9cc3f0",2:"#5598e7",3:"#2a78d6",5:"#1c5cab",10:"#0d366b"}; MUMK={1:"o",2:"s",3:"^",5:"D",10:"v"}
 def fig8():
-    r=rd("fig6a_eta.csv"); c=rd("fig6b_cos3.csv")
-    fig,(a,b)=plt.subplots(1,2,figsize=(7.0,2.8),gridspec_kw={"width_ratios":[1.35,1]})
-    cols={1:"#86b6ef",2:"#5598e7",3:"#2a78d6",5:"#1c5cab",10:"#0d366b"}; mk={1:"o",2:"s",3:"^",5:"D",10:"v"}
+    P=_wcsv("psi2_by_L.csv"); F=_wcsv("eta_fits.csv")
+    fig=plt.figure(figsize=(7.0,2.75))
+    a=fig.add_axes([0.075,0.17,0.25,0.72]); b=fig.add_axes([0.405,0.17,0.30,0.72]); c=fig.add_axes([0.785,0.17,0.205,0.72])
+    # (a) raw finite-size data at T/Tc ~ 0.93: psi_s^2 vs L with power-law fits
+    pick={1:0.64,2:0.76,3:0.88,5:1.00,10:1.06}
+    for m,T in pick.items():
+        q=P[(P.mu==m)&(np.isclose(P["T"],T))&(P.L>=32)].sort_values("L"); f=F[(F.mu==m)&np.isclose(F["T"],T)].iloc[0]
+        a.errorbar(q.L,q.spin_psi2,yerr=q.spin_psi2_e,fmt=MUMK[m],ms=3.6,color=MUCOL[m],capsize=1.5,zorder=3,
+                   label=f"μ = {m} ({T/{1:0.696,2:0.8,3:0.95,5:1.05,10:1.141}[m]:.2f})")
+        LL=np.linspace(30,100,20); a.plot(LL,np.exp(f.lnA)*LL**(-f.eta),color=MUCOL[m],lw=1)
+    a.set_xscale("log"); a.set_yscale("log"); a.set_xticks([32,48,64,96]); a.set_xticklabels(["32","48","64","96"]); a.minorticks_off()
+    a.set_yticks([0.1,0.2,0.3,0.5]); a.set_yticklabels(["0.1","0.2","0.3","0.5"])
+    a.set_xlabel("L"); a.set_ylabel(r"$\psi_s^2$"); a.set_ylim(0.075,0.62)
+    a.legend(loc="lower left",frameon=False,fontsize=6.2,handletextpad=0.3,borderaxespad=0.1,title=r"($T/T_c$)",title_fontsize=6.2)
+    a.grid(color=GRID,lw=0.5); lab(a,"(a)",-0.24)
+    # (b) effective eta vs T/Tc, identical fit for every point
     for m in [1,2,3,5,10]:
-        q=[z for z in r if int(float(z["mu"]))==m]
-        a.errorbar([float(z["T_over_Tc"]) for z in q],[float(z["eta_eff"]) for z in q],yerr=[float(z["err"]) for z in q],
-                   fmt=mk[m]+"-",ms=3.5,lw=1,color=cols[m],capsize=1.5,label=f"μ = {m}")
-    for v,s in [(4/15,"4/15 (Potts)"),(4/9,"4/9 (Z$_3$ locking)")]:
-        a.axhline(v,color=INK2,lw=0.7,ls=":"); a.text(0.604,v+0.01,s,fontsize=6.6,color=INK2,va="bottom")
-    a.set_xlim(0.6,1.06); a.set_ylim(-0.08,1.0); a.set_xlabel(r"$T/T_c$"); a.set_ylabel(r"effective $\eta$  ($\psi_s^2\propto L^{-\eta}$)")
-    a.legend(loc="upper left",bbox_to_anchor=(0.0,1.0),frameon=False,ncol=3,columnspacing=1.0,handlelength=1.6); a.grid(color=GRID,lw=0.5); lab(a,"(a)",-0.12)
-    tc=1.141
-    for T,cl,mkk in [(0.7,BLUE,"o"),(1.04,ORG,"s"),(1.08,GRN,"^"),(1.14,YEL,"D")]:
-        q=[z for z in c if abs(float(z["T"])-T)<1e-6]
-        b.plot([int(z["L"]) for z in q],[float(z["cos3theta"]) for z in q],mkk+"-",ms=4,lw=1,color=cl,label=f"T/T$_c$ = {T/tc:.2f}")
-    b.set_xscale("log"); b.set_xticks([32,48,64,96]); b.set_xticklabels(["32","48","64","96"]); b.minorticks_off()
-    b.set_xlabel("L"); b.set_ylabel(r"$\langle\cos 3\theta\rangle$  (μ = 10)"); b.set_ylim(0,1.12)
-    b.legend(loc="upper center",bbox_to_anchor=(0.5,0.84),frameon=False,ncol=2); b.grid(color=GRID,lw=0.5); lab(b,"(b)",-0.16)
-    fig.tight_layout(w_pad=2.0); save(fig,"fig8_eta_cos3")
+        q=F[(F.mu==m)&(F.TTc<=1.06)].sort_values("TTc"); good=q.chi2dof<=3
+        b.errorbar(q.TTc[good],q.eta[good],yerr=q.eta_e[good],fmt=MUMK[m]+"-",ms=3.4,lw=0.9,color=MUCOL[m],capsize=1.3,label=f"μ = {m}")
+        if (~good).any(): b.errorbar(q.TTc[~good],q.eta[~good],yerr=q.eta_e[~good],fmt=MUMK[m],ms=3.4,mfc="white",color=MUCOL[m],capsize=1.3)
+    for v,s_ in [(4/15,"4/15 (Potts)"),(4/9,r"4/9 ($Z_3$ locking)")]:
+        b.axhline(v,color=INK2,lw=0.7,ls=":"); b.text(0.605,v+0.012,s_,fontsize=6.4,color=INK2,va="bottom")
+    b.axvspan(0.89,0.95,color="#dfe9f7",zorder=0)
+    b.set_xlim(0.6,1.06); b.set_ylim(-0.1,1.0); b.set_xlabel(r"$T/T_c$"); b.set_ylabel(r"effective $\eta$")
+    b.legend(loc="upper left",frameon=False,ncol=3,fontsize=6.4,columnspacing=0.8,handlelength=1.5); b.grid(color=GRID,lw=0.5); lab(b,"(b)",-0.15)
+    # (c) <cos 3theta>, <cos 6theta> vs L inside the window (mu=10), with errors
+    for T,cl,mk_ in [(1.04,ORG,"s"),(1.08,GRN,"^")]:
+        q=P[(P.mu==10)&np.isclose(P["T"],T)].sort_values("L")
+        c.errorbar(q.L,q.c3,yerr=q.c3_e,fmt=mk_+"-",ms=3.4,lw=0.9,color=cl,capsize=1.5,label=rf"$\cos3\theta$, {T/1.141:.2f}")
+        c.errorbar(q.L*1.03,q.c6,yerr=q.c6_e,fmt=mk_+"--",ms=3.4,lw=0.9,mfc="white",color=cl,capsize=1.5,label=rf"$\cos6\theta$, {T/1.141:.2f}")
+    c.axhline(0,color=INK2,lw=0.6)
+    c.set_xscale("log"); c.set_xticks([24,32,48,64,96]); c.set_xticklabels(["24","32","48","64","96"]); c.minorticks_off()
+    c.set_xlabel("L"); c.set_ylabel(r"$\langle\cos p\theta\rangle$  (μ = 10)"); c.set_ylim(-0.12,0.9)
+    c.legend(loc="upper left",frameon=False,fontsize=6.0,ncol=1,handlelength=2.0,title=r"$T/T_c$ in window",title_fontsize=6.0)
+    c.grid(color=GRID,lw=0.5); lab(c,"(c)",-0.3)
+    save(fig,"fig8_eta_cos3")
 
-# ---------- Fig 9: plateau window: U4 vs T/Tc, mu=0 vs mu=10 ----------
+# ---------- Fig 14: plateau window: U4 vs T/Tc, mu=0 vs mu=10 ----------
 def fig9():
-    r=rd("fig2_binder.csv")
+    import pandas as pd
+    r=rd("fig2_binder.csv"); R=_wcsv("raw_observables_d21.csv")
+    def comb(g,k):
+        v=g[k].values; e=g[k+"_e"].values; w=1/e**2; m=np.sum(w*v)/np.sum(w); er=np.sqrt(1/np.sum(w))
+        if len(v)>1: er*=max(1,np.sqrt(np.sum(w*(v-m)**2)/(len(v)-1)))
+        return m,er
     fig,(a,b)=plt.subplots(1,2,figsize=(7.0,2.7),sharey=True)
     rr=[q for q in r if q["model"].lower().startswith("anne")]
     for L in sorted({int(q["L"]) for q in rr}):
         q=sorted([z for z in rr if int(z["L"])==L],key=lambda z:float(z["T"]))
-        a.plot([float(z["T"])/0.528 for z in q],[float(z["U4"]) for z in q],color=LCOL[L],lw=1.4,label=f"L = {L}")
+        a.plot([float(z["T"])/0.528 for z in q],[float(z["U4"]) for z in q],color=LCOL[L],lw=1.1,alpha=0.85)
+        g=R[(R.mu==0)&(R.L==L)&R.hub_U4.notna()]
+        pts=[(T/0.528,)+comb(h,"hub_U4") for T,h in g.groupby("T")]
+        if pts:
+            x,y,e=map(np.array,zip(*pts)); a.errorbar(x,y,yerr=e,fmt="o",ms=3,color=LCOL[L],capsize=1.5,label=f"L = {L}",zorder=3)
+    g=R[(R.mu==0)&(R.L==96)&R.hub_U4.notna()]
+    pts=[(T/0.528,)+comb(h,"hub_U4") for T,h in g.groupby("T")]
+    x,y,e=map(np.array,zip(*pts)); a.errorbar(x,y,yerr=e,fmt="o",ms=3,color=LCOL[96],capsize=1.5,label="L = 96",zorder=3)
     a.set_title(r"$\mu=0$ (hub order parameter)",pad=3)
-    T=[1.02,1.04,1.06,1.08,1.10,1.12,1.14,1.16,1.18,1.20]
-    tab={24:[.464,.459,.459,.458,.447,.427,.384,.290,.147,.069],32:[.458,.460,.460,.456,.449,.435,.387,.237,.057,-.035],
-         48:[.459,.461,.464,.460,.456,.450,.391,.137,-.012,-.077],64:[.460,.465,.460,.463,.461,.455,.3905,-.026,-.004,-.017],
-         96:[None,.462,None,.455,None,.457,.418,None,None,None]}
-    err={24:[2,1,1,1,3,4,8,11,14,21],32:[2,2,1,3,6,6,12,18,31,18],48:[3,4,3,2,4,4,6,20,31,27],64:[5,3,5,3,2,2,22,35,46,22],96:[0,3,0,8,0,6,9,0,0,0]}
     for L in [24,32,48,64,96]:
-        xs=[t/1.141 for t,v in zip(T,tab[L]) if v is not None]; ys=[v for v in tab[L] if v is not None]
-        es=[e/1000 for e,v in zip(err[L],tab[L]) if v is not None]
-        b.errorbar(xs,ys,yerr=es,fmt="o-",ms=3,lw=1,color=LCOL[L],capsize=1.5,label=f"L = {L}")
+        g=R[(R.mu==10)&(R.L==L)&R.spin_U4.notna()&(R["T"]>=1.0)]
+        pts=sorted([(T/1.141,)+comb(h,"spin_U4") for T,h in g.groupby("T")])
+        x,y,e=map(np.array,zip(*pts)); b.errorbar(x,y,yerr=e,fmt="o-",ms=3,lw=1,color=LCOL[L],capsize=1.5,label=f"L = {L}")
     b.set_title(r"$\mu=10$ (spin order parameter)",pad=3)
     for ax,l in [(a,"(a)"),(b,"(b)")]:
         ax.axhline(0.5,color=INK2,lw=0.6,ls=":"); ax.axvspan(0.89,0.95,color="#dfe9f7",zorder=0)
-        ax.set_xlim(0.83,1.06); ax.set_xlabel(r"$T/T_c$"); ax.grid(color=GRID,lw=0.5); lab(ax,l,-0.12)
+        ax.set_xlim(0.82,1.06); ax.set_xlabel(r"$T/T_c$"); ax.grid(color=GRID,lw=0.5); lab(ax,l,-0.12)
         ax.legend(loc="lower left",frameon=False)
     a.set_ylabel(r"$U_4$"); a.set_ylim(-0.1,0.56)
     fig.tight_layout(w_pad=1.5); save(fig,"fig9_window")
